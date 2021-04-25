@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - text_search (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - text_search (from `.symlinks/plugins/text_search/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  text_search:
+    :path: ".symlinks/plugins/text_search/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  text_search: 8596dcafcbad5fcf64ab47349ffe4e4eb3c6dd3a
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.10.1
