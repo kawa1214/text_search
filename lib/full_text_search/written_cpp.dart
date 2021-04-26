@@ -25,10 +25,9 @@ class WritenCpp {
 
   TextsStore get _textsStore => TextsStore();
 
-
-  Map<Pointer<Utf8>, Pointer<Utf8>> _checkTextsStore(Map<String, String> texts) {
-    // TODO: ハッシュで比較したほうが良いかも
-    print(_textsStore.data);
+  Map<Pointer<Utf8>, Pointer<Utf8>> _checkTextsStore(
+      Map<String, String> texts) {
+    // TODO: ハッシュで比較
     if (_textsStore.data.length == 0) {
       _textsStore.setTexts(texts);
       return _textsStore.data;
@@ -36,8 +35,9 @@ class WritenCpp {
       return _textsStore.data;
     }
   }
+
   Map<String, String> searchText(
-      {String searchText, Map<String, String> texts}) {
+      {required String searchText,required Map<String, String> texts}) {
     final nativetexts = _checkTextsStore(texts);
     final nativeSearchText = searchText.toNativeUtf8();
 
@@ -48,13 +48,47 @@ class WritenCpp {
 
     final Map<String, String> results = {};
 
-    for (final textMap in texts.entries.toList()) {
+    for (final textMap in nativetexts.entries.toList()) {
       final key = textMap.key;
       final text = textMap.value;
-      final hasMatch = _intToBool(
-          cppTextSearch(searchText.toNativeUtf8(), text.toNativeUtf8()));
-      if (hasMatch) {
-        results.addAll({key: text});
+
+      //Stopwatch stopwatch = Stopwatch();
+      //stopwatch.start();
+      final hasMatch = cppTextSearch(nativeSearchText, text);
+      //stopwatch.stop();
+      //print(stopwatch.elapsedMicroseconds);
+
+      if (hasMatch == 1) {
+        results.addAll({key.toDartString(): text.toDartString()});
+      }
+    }
+    return results;
+  }
+
+  Map<String, String> orSearch(
+      {required List<String> searchTexts,required Map<String, String> texts}) {
+    final nativetexts = _checkTextsStore(texts);
+
+    final library = initLibrary();
+    final cppTextSearch = library
+        .lookup<NativeFunction<fullTextSearchFunc>>("full_text_search")
+        .asFunction<FullTextSearch>();
+    final Map<String, String> results = {};
+    for (final searchText in searchTexts) {
+      final nativeSearchText = searchText.toNativeUtf8();
+      for (final textMap in nativetexts.entries.toList()) {
+        final key = textMap.key;
+        final text = textMap.value;
+
+        //Stopwatch stopwatch = Stopwatch();
+        //stopwatch.start();
+        final hasMatch = cppTextSearch(nativeSearchText, text);
+        //stopwatch.stop();
+        //print(stopwatch.elapsedMicroseconds);
+
+        if (hasMatch == 1) {
+          results.addAll({key.toDartString(): text.toDartString()});
+        }
       }
     }
     return results;

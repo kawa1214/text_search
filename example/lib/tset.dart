@@ -46,26 +46,21 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-String dummySearchText = 'いろんなことがあるけど．カタカナがなんか苦手．ダミーは好き';
-Map<String, String> dummyTexts = {
-  '1': '俺は最近，良いことがおきた',
-  '2': 'あなたは元気ですか？',
-  '3': '日常の良さは日常の良さかも',
-  '4': '咲いた花は綺麗',
-  '5': '街にある絵',
-  '6': 'あーなんか疲れたかも',
-};
-
 class _MyAppState extends State<MyApp> {
+  String _platformVersion = 'Unknown';
+
   @override
   void initState() {
     super.initState();
-    scoreTextSearch();
-    //fullTextSearchByDart();
+    print('---');
+    fullTextSearchByCPP();
+    fullTextSearchByDart();
+    print('---');
   }
 
-  Future<void> scoreTextSearch() async {
-    final mapLength = 2;
+  Future<void> fullTextSearchByCPP() async {
+    print('cpp');
+    final mapLength = 10000;
     final keyLength = 30;
     final textLength = 800;
     final texts = StringUtils.randomStringMaps(
@@ -75,17 +70,29 @@ class _MyAppState extends State<MyApp> {
 
     Stopwatch stopwatch = Stopwatch();
     stopwatch.start();
-    final results = await TextSearch().scoreTextSearch(
+    final fullTextSearch = WritenCpp();
+    final results = fullTextSearch.searchText(
       searchText: searchText,
       texts: texts,
     );
     stopwatch.stop();
-    print('results length: ${results.entries.toList()}');
+    print('results length: ${results.entries.toList().length}');
+    print('実行時間: ${stopwatch.elapsedMilliseconds}(ms)');
+    print('実行時間: ${stopwatch.elapsedMilliseconds / 100}(sec)');
+        stopwatch.reset();
+    stopwatch.start();
+    final orSearchResult = fullTextSearch.orSearch(
+      searchTexts: [searchText, searchText, searchText, searchText, searchText],
+      texts: texts,
+    );
+    stopwatch.stop();
+    print('results length: ${orSearchResult.entries.toList().length}');
     print('実行時間: ${stopwatch.elapsedMilliseconds}(ms)');
     print('実行時間: ${stopwatch.elapsedMilliseconds / 100}(sec)');
   }
 
   Future<void> fullTextSearchByDart() async {
+    print('dart');
     final mapLength = 10000;
     final keyLength = 30;
     final textLength = 800;
@@ -96,8 +103,9 @@ class _MyAppState extends State<MyApp> {
         texts.entries.toList()[mapLength ~/ 2].value.substring(80, 82);
 
     stopwatch.start();
-    final results = TextSearch.search(
-      searchText: dummySearchText,
+    final fullTextSearch = WrittenDart();
+    final results = fullTextSearch.searchText(
+      searchText: searchText,
       texts: texts,
     );
     stopwatch.stop();
@@ -106,7 +114,7 @@ class _MyAppState extends State<MyApp> {
     print('実行時間: ${stopwatch.elapsedMilliseconds / 100}(sec)');
     stopwatch.reset();
     stopwatch.start();
-    final orSearchResult = TextSearch.orSearch(
+    final orSearchResult = fullTextSearch.orSearch(
       searchTexts: [searchText, searchText, searchText, searchText, searchText],
       texts: texts,
     );
@@ -120,15 +128,13 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: SafeArea(
-          child: SizedBox(
-            width: double.infinity,
-            child: Column(
-              //mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-              ],
-            ),
+        appBar: AppBar(
+          title: const Text('Plugin example app'),
+        ),
+        body: Center(
+          child: GestureDetector(
+            onTap: () => fullTextSearchByCPP(),
+            child: Text('search c++'),
           ),
         ),
       ),
